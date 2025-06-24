@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title or "Swiss Luxury Timepieces" }}{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='css/main.css') }}">
+    
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="{% block description %}Discover our collection of Swiss luxury timepieces inspired by Rolex excellence. Premium watches crafted with precision and elegance.{% endblock %}">
+    <meta name="keywords" content="luxury watches, Swiss timepieces, Rolex inspired, premium watches, luxury jewelry">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="/" class="brand-link">
+                    <span class="crown-icon">♔</span>
+                    <span class="brand-text">SWISS LUXURY</span>
+                </a>
+            </div>
+            
+            <div class="nav-menu" id="nav-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/collection" class="nav-link">Collection</a>
+                <a href="/collection/Submariner" class="nav-link">Submariner</a>
+                <a href="/collection/GMT-Master" class="nav-link">GMT-Master</a>
+                <a href="/collection/Daytona" class="nav-link">Daytona</a>
+                <a href="/cart" class="nav-link cart-link">
+                    <span class="cart-icon">🛒</span>
+                    <span class="cart-text">Cart</span>
+                </a>
+                <a href="/login" class="nav-link login-link">Login</a>
+            </div>
+            
+            <div class="nav-toggle" id="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Swiss Luxury Timepieces</h3>
+                <p>Crafting excellence in every timepiece. Inspired by Swiss precision and luxury.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Collections</h4>
+                <ul>
+                    <li><a href="/collection/Submariner">Submariner</a></li>
+                    <li><a href="/collection/GMT-Master">GMT-Master</a></li>
+                    <li><a href="/collection/Daytona">Daytona</a></li>
+                    <li><a href="/collection/Datejust">Datejust</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Customer Service</h4>
+                <ul>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Size Guide</a></li>
+                    <li><a href="#">Care Instructions</a></li>
+                    <li><a href="#">Warranty</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>About</h4>
+                <ul>
+                    <li><a href="#">Our Story</a></li>
+                    <li><a href="#">Craftsmanship</a></li>
+                    <li><a href="#">Heritage</a></li>
+                    <li><a href="#">Innovation</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 Swiss Luxury Timepieces. Inspired by excellence.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', path='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
