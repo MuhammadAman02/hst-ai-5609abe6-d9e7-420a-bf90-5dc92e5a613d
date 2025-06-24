@@ -1,175 +1,86 @@
-import os
-import time
-from datetime import datetime, timedelta
-from typing import Dict, Optional, Union, Any
+"""Security utilities for authentication and authorization"""
 
-from jose import jwt
+from datetime import datetime, timedelta
+from typing import Optional
+from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.logging import app_logger
+from app.core.database import get_db
+from app.services.user_service import UserService
 
-# Password hashing context
+# Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# OAuth2 password bearer for token authentication
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token", auto_error=False)
+# OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against a hash.
-    
-    Args:
-        plain_password: The plain-text password
-        hashed_password: The hashed password to compare against
-        
-    Returns:
-        True if the password matches the hash, False otherwise
-    """
+    """Verify a password against its hash"""
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password: str) -> str:
-    """Generate a password hash.
-    
-    Args:
-        password: The plain-text password to hash
-        
-    Returns:
-        The hashed password
-    """
+    """Hash a password"""
     return pwd_context.hash(password)
 
-def create_access_token(
-    data: Dict[str, Any], 
-    expires_delta: Optional[timedelta] = None
-) -> str:
-    """Create a JWT access token.
-    
-    Args:
-        data: The data to encode in the token
-        expires_delta: Optional expiration time delta
-        
-    Returns:
-        The encoded JWT token
-    """
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    """Create a JWT access token"""
     to_encode = data.copy()
-    
-    # Set expiration time
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.access_token_expire_minutes)
+        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire})
-    
-    # Create the JWT token
-    try:
-        encoded_jwt = jwt.encode(
-            to_encode, 
-            settings.secret_key, 
-            algorithm=settings.algorithm
-        )
-        return encoded_jwt
-    except Exception as e:
-        app_logger.error(f"Error creating access token: {e}")
-        raise
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
+    return encoded_jwt
 
-def decode_access_token(token: str) -> Dict[str, Any]:
-    """Decode a JWT access token.
-    
-    Args:
-        token: The JWT token to decode
-        
-    Returns:
-        The decoded token payload
-        
-    Raises:
-        HTTPException: If the token is invalid
-    """
-    try:
-        payload = jwt.decode(
-            token, 
-            settings.secret_key, 
-            algorithms=[settings.algorithm]
-        )
-        return payload
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    except jwt.JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+def authenticate_user(db: Session, username: str, password: str):
+    """Authenticate a user"""
+    user_service = UserService(db)
+    user = user_service.get_user_by_username(username)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
 
-async def get_current_user(token: Optional[str] = Depends(oauth2_scheme)) -> Optional[Dict[str, Any]]:
-    """Get the current user from a JWT token.
+async def get_current_user(request: Request, db: Session = Depends(get_db)):
+    """Get current authenticated user from token"""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
     
-    This is a dependency that can be used in FastAPI route functions.
+    # Try to get token from cookie first, then from Authorization header
+    token = None
+    if "access_token" in request.cookies:
+        token = request.cookies["access_token"].replace("Bearer ", "")
     
-    Args:
-        token: The JWT token from the Authorization header
-        
-    Returns:
-        The user data from the token, or None if no token is provided
-        
-    Raises:
-        HTTPException: If the token is invalid
-    """
     if not token:
-        return None
+        # For API endpoints, try Authorization header
+        authorization = request.headers.get("Authorization")
+        if authorization and authorization.startswith("Bearer "):
+            token = authorization.split(" ")[1]
+    
+    if not token:
+        raise credentials_exception
     
     try:
-        payload = decode_access_token(token)
-        return payload
-    except HTTPException:
-        return None
-
-async def get_current_active_user(
-    current_user: Dict[str, Any] = Depends(get_current_user)
-) -> Dict[str, Any]:
-    """Get the current active user.
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
     
-    This is a dependency that can be used in FastAPI route functions.
-    It requires that a user is authenticated.
+    user_service = UserService(db)
+    user = user_service.get_user_by_username(username)
+    if user is None:
+        raise credentials_exception
     
-    Args:
-        current_user: The current user from get_current_user
-        
-    Returns:
-        The current user data
-        
-    Raises:
-        HTTPException: If no user is authenticated or the user is inactive
-    """
-    if not current_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    # Check if the user is active (if you have an 'active' field in your user model)
-    if current_user.get("disabled", False):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Inactive user"
-        )
-    
-    return current_user
-
-def generate_secure_random_string(length: int = 32) -> str:
-    """Generate a secure random string.
-    
-    Args:
-        length: The length of the string to generate
-        
-    Returns:
-        A secure random string
-    """
-    return os.urandom(length).hex()[:length]
+    return user
