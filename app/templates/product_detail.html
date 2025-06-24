@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - {{ product.collection }} - Swiss Luxury Timepieces{% endblock %}
+
+{% block content %}
+<!-- Product Detail -->
+<section class="product-detail">
+    <div class="container">
+        <div class="product-detail-grid">
+            <!-- Product Images -->
+            <div class="product-images">
+                <div class="main-image">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-main-image" id="mainImage">
+                </div>
+                <div class="image-thumbnails">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="thumbnail active" onclick="changeMainImage(this.src)">
+                    <img src="https://source.unsplash.com/400x400/?luxury-watch,detail&sig={{ product.id }}1" alt="{{ product.name }} Detail" class="thumbnail" onclick="changeMainImage(this.src)">
+                    <img src="https://source.unsplash.com/400x400/?watch-face,luxury&sig={{ product.id }}2" alt="{{ product.name }} Face" class="thumbnail" onclick="changeMainImage(this.src)">
+                    <img src="https://source.unsplash.com/400x400/?watch-bracelet,luxury&sig={{ product.id }}3" alt="{{ product.name }} Bracelet" class="thumbnail" onclick="changeMainImage(this.src)">
+                </div>
+            </div>
+            
+            <!-- Product Info -->
+            <div class="product-info-detail">
+                <div class="product-breadcrumb">
+                    <a href="/collection">Collection</a> / 
+                    <a href="/collection/{{ product.collection }}">{{ product.collection }}</a> / 
+                    <span>{{ product.name }}</span>
+                </div>
+                
+                <h1 class="product-title">{{ product.name }}</h1>
+                <p class="product-model-detail">Model: {{ product.model }}</p>
+                <div class="product-price-detail">${{ "{:,.2f}".format(product.price) }}</div>
+                
+                <div class="product-description">
+                    <p>{{ product.description }}</p>
+                </div>
+                
+                <div class="product-actions">
+                    <button onclick="addToCart({{ product.id }})" class="btn btn-primary btn-large">
+                        Add to Cart
+                    </button>
+                    <button class="btn btn-outline btn-large">
+                        Contact Us
+                    </button>
+                </div>
+                
+                <div class="product-features">
+                    <div class="feature">
+                        <span class="feature-icon">🛡️</span>
+                        <span>5-Year International Warranty</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">🚚</span>
+                        <span>Free Worldwide Shipping</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">💎</span>
+                        <span>Certified Authentic</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">🔧</span>
+                        <span>Professional Service</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Product Specifications -->
+<section class="product-specifications">
+    <div class="container">
+        <h2 class="section-title">Technical Specifications</h2>
+        <div class="specifications-grid">
+            {% set specs = product.specifications | from_json %}
+            {% for key, value in specs.items() %}
+            <div class="spec-item">
+                <div class="spec-label">{{ key }}</div>
+                <div class="spec-value">{{ value }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Related Products -->
+{% if related_products %}
+<section class="related-products">
+    <div class="container">
+        <h2 class="section-title">You May Also Like</h2>
+        <div class="products-grid">
+            {% for related_product in related_products %}
+            <div class="product-card">
+                <div class="product-image-container">
+                    <img src="{{ related_product.image_url }}" alt="{{ related_product.name }}" class="product-image">
+                    <div class="product-overlay">
+                        <a href="/watch/{{ related_product.id }}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <div class="product-collection">{{ related_product.collection }}</div>
+                    <h3 class="product-name">{{ related_product.name }}</h3>
+                    <p class="product-model">{{ related_product.model }}</p>
+                    <div class="product-price">${{ "{:,.2f}".format(related_product.price) }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeMainImage(src) {
+    document.getElementById('mainImage').src = src;
+    
+    // Update active thumbnail
+    document.querySelectorAll('.thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+
+async function addToCart(productId) {
+    try {
+        const response = await fetch(`/cart/add/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            showNotification('Product added to cart successfully!', 'success');
+        } else {
+            showNotification('Failed to add product to cart', 'error');
+        }
+    } catch (error) {
+        showNotification('An error occurred', 'error');
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+</script>
+{% endblock %}
