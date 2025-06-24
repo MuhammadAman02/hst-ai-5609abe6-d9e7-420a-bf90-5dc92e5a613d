@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - Swiss Luxury Timepieces{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <div class="container">
+        <div class="admin-header">
+            <h1>Admin Panel</h1>
+            <p>Manage your luxury timepiece collection</p>
+        </div>
+        
+        <div class="admin-content">
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <h3>{{ products|length }}</h3>
+                    <p>Total Products</p>
+                </div>
+                <div class="stat-card">
+                    <h3>{{ products|selectattr("is_featured")|list|length }}</h3>
+                    <p>Featured Products</p>
+                </div>
+                <div class="stat-card">
+                    <h3>{{ (products|map(attribute="collection")|unique|list)|length }}</h3>
+                    <p>Collections</p>
+                </div>
+            </div>
+            
+            <div class="admin-table-container">
+                <h2>Product Management</h2>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Collection</th>
+                            <th>Model</th>
+                            <th>Price</th>
+                            <th>Featured</th>
+                            <th>Available</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>
+                                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="admin-product-image">
+                            </td>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.collection }}</td>
+                            <td>{{ product.model }}</td>
+                            <td>${{ "{:,.2f}".format(product.price) }}</td>
+                            <td>
+                                <span class="status-badge {% if product.is_featured %}featured{% endif %}">
+                                    {% if product.is_featured %}Yes{% else %}No{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge {% if product.is_available %}available{% else %}unavailable{% endif %}">
+                                    {% if product.is_available %}Yes{% else %}No{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-small btn-outline">Edit</button>
+                                    <button class="btn btn-small btn-outline">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
