@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title">Swiss Luxury Timepieces</h1>
+            <p class="hero-subtitle">Discover the pinnacle of horological excellence. Each timepiece represents centuries of Swiss craftsmanship and innovation.</p>
+            <a href="/collection" class="btn btn-primary hero-btn">Explore Collection</a>
+        </div>
+        <div class="hero-image">
+            <img src="https://source.unsplash.com/1200x800/?luxury-watch,rolex&sig=hero" alt="Luxury Swiss Timepiece" class="hero-img">
+        </div>
+    </div>
+</section>
+
+<!-- Featured Collections -->
+<section class="featured-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Iconic Collections</h2>
+            <p class="section-subtitle">Explore our most celebrated timepieces, each representing the pinnacle of Swiss luxury.</p>
+        </div>
+        
+        <div class="collections-grid">
+            <div class="collection-card">
+                <img src="https://source.unsplash.com/600x400/?submariner,diving-watch&sig=sub" alt="Submariner Collection" class="collection-image">
+                <div class="collection-content">
+                    <h3>Submariner</h3>
+                    <p>The ultimate diving companion, waterproof to 300 metres.</p>
+                    <a href="/collection/Submariner" class="btn btn-outline">Discover</a>
+                </div>
+            </div>
+            
+            <div class="collection-card">
+                <img src="https://source.unsplash.com/600x400/?gmt-watch,pilot-watch&sig=gmt" alt="GMT-Master Collection" class="collection-image">
+                <div class="collection-content">
+                    <h3>GMT-Master</h3>
+                    <p>The traveller's watch with dual time zone functionality.</p>
+                    <a href="/collection/GMT-Master" class="btn btn-outline">Discover</a>
+                </div>
+            </div>
+            
+            <div class="collection-card">
+                <img src="https://source.unsplash.com/600x400/?chronograph,racing-watch&sig=day" alt="Daytona Collection" class="collection-image">
+                <div class="collection-content">
+                    <h3>Daytona</h3>
+                    <p>The ultimate racing chronograph for motorsport enthusiasts.</p>
+                    <a href="/collection/Daytona" class="btn btn-outline">Discover</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="products-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Featured Timepieces</h2>
+            <p class="section-subtitle">Handpicked selections from our master craftsmen.</p>
+        </div>
+        
+        <div class="products-grid">
+            {% for product in featured_products %}
+            <div class="product-card">
+                <div class="product-image-container">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
+                    <div class="product-overlay">
+                        <a href="/watch/{{ product.id }}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <div class="product-collection">{{ product.collection }}</div>
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-model">{{ product.model }}</p>
+                    <div class="product-price">${{ "{:,.2f}".format(product.price) }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="section-footer">
+            <a href="/collection" class="btn btn-outline btn-large">View All Timepieces</a>
+        </div>
+    </div>
+</section>
+
+<!-- Heritage Section -->
+<section class="heritage-section">
+    <div class="container">
+        <div class="heritage-content">
+            <div class="heritage-text">
+                <h2>Swiss Heritage</h2>
+                <p>For over a century, Swiss watchmaking has represented the pinnacle of precision, craftsmanship, and luxury. Each timepiece in our collection embodies this rich heritage, combining traditional techniques with modern innovation.</p>
+                <p>From the depths of the ocean to the heights of aviation, our watches have accompanied explorers, professionals, and connoisseurs in their greatest achievements.</p>
+                <div class="heritage-stats">
+                    <div class="stat">
+                        <div class="stat-number">100+</div>
+                        <div class="stat-label">Years of Excellence</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">Master Craftsmen</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">1000+</div>
+                        <div class="stat-label">Hours per Timepiece</div>
+                    </div>
+                </div>
+            </div>
+            <div class="heritage-image">
+                <img src="https://source.unsplash.com/800x600/?watchmaking,craftsmanship&sig=heritage" alt="Swiss Watchmaking Heritage" class="heritage-img">
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
