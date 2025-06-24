@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Collection Header -->
+<section class="collection-header">
+    <div class="container">
+        <h1 class="page-title">
+            {% if active_collection %}
+                {{ active_collection }} Collection
+            {% else %}
+                Watch Collection
+            {% endif %}
+        </h1>
+        <p class="page-subtitle">
+            {% if active_collection %}
+                Discover the legendary {{ active_collection }} timepieces
+            {% else %}
+                Explore our complete range of Swiss luxury timepieces
+            {% endif %}
+        </p>
+    </div>
+</section>
+
+<!-- Collection Filter -->
+<section class="collection-filter">
+    <div class="container">
+        <div class="filter-tabs">
+            <a href="/collection" class="filter-tab {% if not active_collection %}active{% endif %}">All Collections</a>
+            {% for collection in collections %}
+            <a href="/collection/{{ collection }}" class="filter-tab {% if active_collection == collection %}active{% endif %}">{{ collection }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Products Grid -->
+<section class="products-section">
+    <div class="container">
+        {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <div class="product-image-container">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
+                    <div class="product-overlay">
+                        <a href="/watch/{{ product.id }}" class="btn btn-primary">View Details</a>
+                        <button onclick="addToCart({{ product.id }})" class="btn btn-outline">Add to Cart</button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <div class="product-collection">{{ product.collection }}</div>
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-model">{{ product.model }}</p>
+                    <div class="product-price">${{ "{:,.2f}".format(product.price) }}</div>
+                    {% if product.is_featured %}
+                    <div class="product-badge">Featured</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-collection">
+            <h3>No timepieces found</h3>
+            <p>We're currently updating this collection. Please check back soon.</p>
+            <a href="/collection" class="btn btn-primary">View All Collections</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function addToCart(productId) {
+    try {
+        const response = await fetch(`/cart/add/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            showNotification('Product added to cart successfully!', 'success');
+        } else {
+            showNotification('Failed to add product to cart', 'error');
+        }
+    } catch (error) {
+        showNotification('An error occurred', 'error');
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+</script>
+{% endblock %}
