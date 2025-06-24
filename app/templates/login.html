@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Swiss Luxury Timepieces{% endblock %}
+
+{% block content %}
+<section class="login-section">
+    <div class="container">
+        <div class="login-container">
+            <div class="login-form-container">
+                <div class="login-header">
+                    <h1>Welcome Back</h1>
+                    <p>Sign in to access your account</p>
+                </div>
+                
+                {% if error %}
+                <div class="error-message">
+                    {{ error }}
+                </div>
+                {% endif %}
+                
+                <form method="post" class="login-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required class="form-input">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-large">Sign In</button>
+                </form>
+                
+                <div class="login-footer">
+                    <p>Demo credentials: username: <strong>admin</strong>, password: <strong>admin123</strong></p>
+                </div>
+            </div>
+            
+            <div class="login-image">
+                <img src="https://source.unsplash.com/800x600/?luxury-watch,elegant&sig=login" alt="Luxury Timepiece" class="login-bg-image">
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
